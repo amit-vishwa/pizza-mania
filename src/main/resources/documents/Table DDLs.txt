@@ -1,0 +1,141 @@
+-- Please create tables sequentially:
+
+-- 1.create role table 
+CREATE TABLE `role` (
+  `role_id` int NOT NULL AUTO_INCREMENT,
+  `role_name` varchar(45) NOT NULL UNIQUE,
+  `record_status` char(1) NOT NULL DEFAULT 'A',
+  `created_on_timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by_user` varchar(45) NOT NULL,
+  `created_by_process` varchar(45) NOT NULL,
+  `last_updated_on_timestamp` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `last_updated_by_user` varchar(45) DEFAULT NULL,
+  `last_updated_by_process` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 2.create user table 
+CREATE TABLE `user` (
+  `user_id` int NOT NULL AUTO_INCREMENT UNIQUE,
+  `user_name` varchar(45) NOT NULL UNIQUE,
+  `user_pass` varchar(200) NOT NULL,
+  `user_type` varchar(45) NOT NULL,
+  `role_id` int(45) NOT NULL,
+  `record_status` char(1) NOT NULL DEFAULT 'A',
+  `created_on_timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by_user` varchar(45) NOT NULL,
+  `created_by_process` varchar(45) NOT NULL,
+  `last_updated_on_timestamp` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `last_updated_by_user` varchar(45) DEFAULT NULL,
+  `last_updated_by_process` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`user_id`), 
+  CONSTRAINT `fk_roleid` FOREIGN KEY (`role_id`) REFERENCES `role`(`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 3.create log table 
+CREATE TABLE `log` (
+  `log_id` bigint NOT NULL AUTO_INCREMENT,
+  `remote_ip_address` varchar(50) DEFAULT NULL,
+  `http_method` varchar(10) DEFAULT NULL,
+  `api_url` varchar(1000) DEFAULT NULL,
+  `request_payload` blob,
+  `response_payload` blob,
+  `api_status_code` smallint DEFAULT NULL,
+  `user_agent` varchar(200) DEFAULT NULL,
+  `start_time` datetime NULL DEFAULT NULL,
+  `end_time` datetime NULL DEFAULT NULL,
+  `record_status` char(1) NOT NULL DEFAULT 'A',
+  `created_on_timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by_user` varchar(45) NOT NULL,
+  `created_by_process` varchar(45) NOT NULL,
+  `last_updated_on_timestamp` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `last_updated_by_user` varchar(45) DEFAULT NULL,
+  `last_updated_by_process` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=236018 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+-- 4.create product table 
+CREATE TABLE `product` (
+  `product_id` int NOT NULL AUTO_INCREMENT,
+  `product_name` varchar(45) NOT NULL,
+  `product_description` varchar(100) NOT NULL,
+  `product_cost` decimal(5,2) NOT NULL,
+  `product_quantity` int NOT NULL,
+  `product_available` tinyint(1) NOT NULL,
+  `record_status` char(1) NOT NULL DEFAULT 'A',
+  `created_on_timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by_user` varchar(45) NOT NULL,
+  `created_by_process` varchar(45) NOT NULL,
+  `last_updated_on_timestamp` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `last_updated_by_user` varchar(45) DEFAULT NULL,
+  `last_updated_by_process` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`product_id`),
+  UNIQUE KEY `product_id_UNIQUE` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 5.create purchase table 
+CREATE TABLE `purchase` (
+  `purchase_id` int NOT NULL AUTO_INCREMENT,
+  `purchase_items` int NOT NULL,
+  `purchase_amount` decimal(10,2) NOT NULL,
+  `status` varchar(45) NOT NULL,
+  `status_timestamp` datetime NOT NULL,
+  `record_status` char(1) NOT NULL DEFAULT 'A',
+  `created_on_timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by_user` varchar(45) NOT NULL,
+  `created_by_process` varchar(45) NOT NULL,
+  `last_updated_on_timestamp` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `last_updated_by_user` varchar(45) DEFAULT NULL,
+  `last_updated_by_process` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`purchase_id`),
+  UNIQUE KEY `purchase_id_UNIQUE` (`purchase_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 6.create purchase_detail table 
+CREATE TABLE `purchase_detail` (
+  `purchase_details_id` int NOT NULL AUTO_INCREMENT,
+  `purchase_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `product_quantity` int NOT NULL,
+  `product_cost` decimal(5,2) NOT NULL,
+  `total_product_cost` decimal(5,2) NOT NULL,
+  `status` varchar(45) NOT NULL,
+  `status_timestamp` datetime NOT NULL,
+  `record_status` char(1) NOT NULL DEFAULT 'A',
+  `created_on_timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by_user` varchar(45) NOT NULL,
+  `created_by_process` varchar(45) NOT NULL,
+  `last_updated_on_timestamp` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `last_updated_by_user` varchar(45) DEFAULT NULL,
+  `last_updated_by_process` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`purchase_details_id`),
+  UNIQUE KEY `purchase_details_id_UNIQUE` (`purchase_details_id`),
+  KEY `fk_purchase_idx` (`purchase_id`),
+  KEY `fk_product_idx` (`product_id`),
+  CONSTRAINT `fk_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`),
+  CONSTRAINT `fk_purchase` FOREIGN KEY (`purchase_id`) REFERENCES `purchase` (`purchase_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 7.create cart table 
+CREATE TABLE `cart` (
+  `cart_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `purchase_id` int NOT NULL,
+  `status` varchar(45) NOT NULL,
+  `status_timestamp` datetime NOT NULL,
+  `record_status` char(1) NOT NULL DEFAULT 'A',
+  `created_on_timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by_user` varchar(45) NOT NULL,
+  `created_by_process` varchar(45) NOT NULL,
+  `last_updated_on_timestamp` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `last_updated_by_user` varchar(45) DEFAULT NULL,
+  `last_updated_by_process` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`cart_id`),
+  UNIQUE KEY `cart_id_UNIQUE` (`cart_id`),
+  KEY `fk_userid_idx` (`user_id`),
+  KEY `fk_purchaseid_idx` (`purchase_id`),
+  CONSTRAINT `fk_purchaseid` FOREIGN KEY (`purchase_id`) REFERENCES `purchase` (`purchase_id`),
+  CONSTRAINT `fk_userid` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+

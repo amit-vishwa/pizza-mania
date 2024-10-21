@@ -1,0 +1,29 @@
+User types:
+1.Internal users -> this can only be created by Admin for app client users from cognito user pool
+2.External users -> this can be created by Admin as well as new users can register themselves, after inserting record in db a new user is created in cognito
+
+Users:
+1.Admin -> Perform CRUD operations on users i.e. add new users, edit user roles, delete users, search users
+2.Manager -> Perform CRUD operations on products i.e. add new products, edit products, delete products, search products, complete pending purchase order post 30mins
+3.User -> Perform CRUD operations on purchase_details i.e. add new pending purchase order, search products, cancel pending purchase order within 30mins
+
+Public APIs:
+1.CSRF -> an open API is there to generate CSRF token that can be passed to APIs other than GET endpoints
+2.Sign-in -> only external registered users can pass username and password in order to generate bearer token to access authenticated APIs
+3.Sign-up -> external users can register themselves by providing username and password
+
+Internal users:
+- They cannot sign-in, they are provided with postman collection to generate token
+- Using that bearer token only they can access authenticated APIs
+- Internal users will be Admin and Manager only
+
+Delete users:
+- Internal users will be soft-deleted only by Admin
+- External users can delete themselves or Admin can soft delete them, they will also be get deleted from cognito
+- Correct user password is required for user deletion in every case
+
+New functionalities added:
+- Logging all authenticated API calls including plain text password masking in database
+- Soft delete associated cart, purchase and purchase details records when user is deleted
+- Add status and status timestamp fields in cart and purchase details table and keep it in sync with purchase table
+- When purchase details are cancelled, then don't update quantity and total amount instead just update status

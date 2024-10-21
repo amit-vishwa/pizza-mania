@@ -1,0 +1,174 @@
+{
+	"messages": {
+		"success": {
+			"code": "SUCCESS",
+			"text": "Success",
+			"detail": ""
+		},
+		"badInput": {
+			"code": "FAILURE",
+			"text": "Failed",
+			"detail": "Invalid or bad data passed in the payload"
+		},
+		"errorGettingResponse": {
+			"code": "FAILURE",
+			"text": "Failed to get Data",
+			"detail": "Failed to get Data from the API"
+		},
+		"failedToCreateData": {
+			"code": "FAILURE",
+			"text": "Failed to create data",
+			"detail": "Failed to create data due to technical error."
+		},
+		"failedToUpdateData": {
+			"code": "FAILURE",
+			"text": "Failed to update data",
+			"detail": "Failed to update data due to technical error."
+		},
+		"failedToDeleteData": {
+			"code": "FAILURE",
+			"text": "Failed to delete data",
+			"detail": "Failed to delete data due to technical error."
+		},
+		"badRequest": {
+			"code": "BAD_REQUEST",
+			"text": "Missing or malformed request body",
+			"detail": "Add or correct request body and try again."
+		},
+		"requiredInfoMissing": {
+			"code": "FAILURE",
+			"text": "REQUIRED_INFO_MISSING",
+			"detail": "Required information missing from request"
+		},
+		"missingSearchCriteria": {
+			"code": "FAILURE",
+			"text": "Required search criteria or criteria model is missing.",
+			"detail": "Required search criteria or criteria model is missing."
+		},
+		"httpMessageNotReadableException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": "Add or correct request body and try again."
+		},
+		"methodArgumentTypeMismatchException": {
+			"code": "TYPE_MISMATCH",
+			"text": "Type Mismatch",
+			"detail": "Input parameter datatype is not valid"
+		},
+		"httpRequestMethodNotSupportedException": {
+			"code": "METHOD_NOT_ALLOWED",
+			"text": "METHOD_NOT_ALLOWED",
+			"detail": "REST method is not allowed"
+		},
+		"nullPointerException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": ""
+		},
+		"duplicateKeyException": {
+			"code": "DUPLICATE_KEY_EXCEPTION",
+			"text": "DUPLICATE_KEY_EXCEPTION",
+			"detail": "Primary key needs to be unique"
+		},
+		"dataIntegrityViolationException": {
+			"code": "DATABASE_CONSTRAINT_EXCEPTION",
+			"text": "DATABASE_CONSTRAINT_EXCEPTION",
+			"detail": "Database constraint is violated"
+		},
+		"badSqlGrammarException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": ""
+		},
+		"sqlException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": ""
+		},
+		"arithmeticException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": ""
+		},
+		"dataAccessException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": ""
+		},
+		"sdkException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": ""
+		},
+		"exception": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": "Uncaught Exception!"
+		},
+		"httpClientErrorException": {
+			"code": "REQUEST_FAILED",
+			"text": "REQUEST_FAILED",
+			"detail": ""
+		},
+		"badCredentialsException": {
+			"code": "INVALID_CREDENTIALS",
+			"text": "INVALID_CREDENTIALS",
+			"detail": ""
+		},
+		"notFoundException": {
+			"code": "NOT_FOUND",
+			"text": "404 Not Found",
+			"detail": "The resource is not available"
+		},
+		"unauthorizedException": {
+			"code": "UNAUTHORIZED",
+			"text": "Error 401 - Unauthorized",
+			"detail": "Request could not be processed"
+		},
+		"permissionDenied": {
+			"code": "PERMISSION_DENIED",
+			"text": "PERMISSION_DENIED",
+			"detail": "Action not permitted"
+		},
+		"accessDeniedException": {
+			"code": "ACCESS_DENIED",
+			"text": "ACCESS_DENIED",
+			"detail": "Access Denied"
+		},
+		"activeRecordExistsException": {
+			"code": "ACTIVE_RECORD_EXIST",
+			"text": "ACTIVE_RECORD_EXIST",
+			"detail": "An active record is associated with this id, try updating information"
+		},
+		"noRecordExistsException": {
+			"code": "NO_RECORD_EXIST",
+			"text": "NO_RECORD_EXIST",
+			"detail": "No active record is associated with this id"
+		},
+		"notFound": {
+			"code": "NO_RECORD_FOUND",
+			"text": "No records that matches your search criteria",
+			"detail": "No records that matches your search criteria"
+		},
+		"fileSizeExceedsLimit": {
+			"code": "INVALID_FILE_SIZE",
+			"text": "File size exceeds the maximum limit",
+			"detail": "File size exceeds the maximum limit"
+		},
+		"apiError": {
+			"code": "apierror",
+			"text": "Error procession the API request.PLease try after some time",
+			"detail": "Error procession the API request.Please try after some time"
+		},
+		"invalidDate": {
+			"code": "Invalid Date",
+			"text": "Invalid Date",
+			"detail": "Invalid Date"
+		},
+		"customError": {
+			"code": "Failed_To_Process_Request",
+			"text": "Failed_To_Process_Request",
+			"detail": "Unable to process request at this time. Please try after sometime!"
+		}
+	}
+}
