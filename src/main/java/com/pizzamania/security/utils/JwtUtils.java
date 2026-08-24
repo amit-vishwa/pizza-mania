@@ -36,7 +36,6 @@ public class JwtUtils {
 	private int jwtExpirationMs;
 
 	public JWT getJwtFromHeader(String bearerToken) {
-		logger.info("Authorization Header: {}", bearerToken);
 		return getJWTToken(bearerToken);
 	}
 

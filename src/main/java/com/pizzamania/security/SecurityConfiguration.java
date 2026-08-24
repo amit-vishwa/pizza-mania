@@ -5,6 +5,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import java.sql.Timestamp;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,14 +65,26 @@ public class SecurityConfiguration {
 
 	@Bean
 	CommandLineRunner initData(RoleRepository roleRepository, UserRepository userRepository,
-			PasswordEncoder passwordEncoder) {
+			PasswordEncoder passwordEncoder,
+			@Value("${app.bootstrap-users.enabled:false}") boolean bootstrapUsersEnabled,
+			@Value("${app.bootstrap-users.password:}") String bootstrapUsersPassword) {
 		return args -> {
+			for (AppRole role : AppRole.values()) {
+				getRole(roleRepository, role);
+			}
+			if (!bootstrapUsersEnabled) {
+				return;
+			}
+			if (bootstrapUsersPassword == null || bootstrapUsersPassword.length() < 12) {
+				throw new IllegalStateException(
+						"BOOTSTRAP_USERS_PASSWORD must contain at least 12 characters when bootstrap users are enabled");
+			}
 			createRequiredUsers(roleRepository, userRepository, passwordEncoder, GlobalConstants.REQUIRED_USER_USER,
-					AppRole.ROLE_USER);
+					AppRole.ROLE_USER, bootstrapUsersPassword);
 			createRequiredUsers(roleRepository, userRepository, passwordEncoder, GlobalConstants.REQUIRED_USER_MANAGER,
-					AppRole.ROLE_MANAGER);
+					AppRole.ROLE_MANAGER, bootstrapUsersPassword);
 			createRequiredUsers(roleRepository, userRepository, passwordEncoder, GlobalConstants.REQUIRED_USER_ADMIN,
-					AppRole.ROLE_ADMIN);
+					AppRole.ROLE_ADMIN, bootstrapUsersPassword);
 		};
 	}
 
@@ -83,13 +96,12 @@ public class SecurityConfiguration {
 	}
 
 	private void createRequiredUsers(RoleRepository roleRepository, UserRepository userRepository,
-			PasswordEncoder passwordEncoder, String user, AppRole roleName) {
+			PasswordEncoder passwordEncoder, String user, AppRole roleName, String bootstrapUsersPassword) {
 		String userNameExt = "@example.com";
-		String userPassExt = "password";
 		if (!userRepository.existsByUserName(user.concat(userNameExt))) {
 			User admin = new User();
 			admin.setUserName(user.concat(userNameExt));
-			admin.setUserPass(passwordEncoder.encode(user.concat(userPassExt)));
+			admin.setUserPass(passwordEncoder.encode(bootstrapUsersPassword));
 			admin.setUserType(GlobalConstants.INTERNAL_USER);
 			admin.setRole(getRole(roleRepository, roleName));
 			admin.setRecordStatus(GlobalConstants.ACTIVE_RECORD_STATUS);
