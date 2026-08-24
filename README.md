@@ -37,6 +37,6 @@ The Postman collection and additional application notes are under `src/main/reso
 
 ## Security notes
 
-- Authentication request and response bodies are not persisted in audit logs.
+- API request and response bodies are retained for the existing audit trail after recursive masking of password, token, authorization, and secret fields. Payloads that cannot be safely parsed and masked are not stored.
 - Authorization headers and bearer tokens must never be written to application logs.
 - The project is a learning application and has not been reviewed or operated as a production service.
