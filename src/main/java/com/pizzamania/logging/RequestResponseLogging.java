@@ -39,9 +39,9 @@ public class RequestResponseLogging {
 
 		String remoteIpAddress = request.getRemoteAddr();
 		String httpMethod = request.getMethod();
-		String apiUrl = Utility.hasValue(request.getQueryString())
-				? request.getRequestURI() + "?" + request.getQueryString()
-				: request.getRequestURI();
+		// Query parameters can contain credentials under arbitrary names. Retain the
+		// endpoint path, but never persist the query string in the audit trail.
+		String apiUrl = request.getRequestURI();
 		if (!apiUrl.contains("auth")) {
 			return;
 		}
@@ -63,7 +63,9 @@ public class RequestResponseLogging {
 		try {
 			logRepository.save(log);
 		} catch (Exception e) {
-			logger.info(e.getMessage());
+			// Persistence errors can include SQL parameters and payload contents.
+			// Do not log the exception message or attach the throwable.
+			logger.warn("API audit record could not be stored");
 		}
 
 	}
