@@ -39,4 +39,6 @@ The Postman collection and additional application notes are under `src/main/reso
 
 - API request and response bodies are retained for the existing audit trail after recursive masking of password, token, authorization, and secret fields. Payloads that cannot be safely parsed and masked are not stored.
 - Authorization headers and bearer tokens must never be written to application logs.
+- Audit URLs retain the endpoint path but omit query strings, which may contain credentials under arbitrary parameter names. Request/response JSON payload logging remains enabled with recursive sensitive-field masking.
+- Audit persistence failures produce a fixed warning without exception messages or stack traces, which could contain SQL parameters or payload values.
 - The project is a learning application and has not been reviewed or operated as a production service.
