@@ -3,6 +3,7 @@ package com.pizzamania.mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.pizzamania.dto.PurchaseDto;
@@ -12,6 +13,7 @@ import com.pizzamania.model.Purchase;
 public interface PurchaseMapper {
 
 	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+	@Mapping(target = "purchaseDetailsDto", ignore = true)
 	PurchaseDto purchaseEntityToDto(Purchase entity);
 
 	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
