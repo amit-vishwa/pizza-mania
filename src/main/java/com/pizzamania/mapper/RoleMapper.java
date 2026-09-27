@@ -3,6 +3,7 @@ package com.pizzamania.mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.pizzamania.security.dto.RoleDto;
@@ -15,6 +16,7 @@ public interface RoleMapper {
 	RoleDto roleEntityToDto(Role entity);
 
 	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+	@Mapping(target = "users", ignore = true)
 	Role roleDtoToEntity(RoleDto dto);
 
 }
