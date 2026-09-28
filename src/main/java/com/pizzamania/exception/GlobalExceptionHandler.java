@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.exacttarget.fuelsdk.ETSdkException;
 import com.pizzamania.utility.Message;
 import com.pizzamania.utility.MessageConfiguration;
 import com.pizzamania.utility.Resource;
@@ -144,16 +143,6 @@ public class GlobalExceptionHandler {
 	public Resource<String> dataIntegrityViolationException(DataIntegrityViolationException e) {
 		log.info("DataIntegrityViolationException", e);
 		return new Resource<String>(null, null, messageConfig.getMessage("dataIntegrityViolationException"),
-				HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-
-	/*
-	 * To handle errors when you try to invoke salesforce api to send email
-	 */
-	@ExceptionHandler(value = ETSdkException.class)
-	public Resource<String> handleETSdkException(ETSdkException e) {
-		log.info("ETSdkException", e.getMessage());
-		return new Resource<String>(null, null, messageConfig.getMessage("sdkException"),
 				HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
