@@ -68,7 +68,7 @@ public class UserManagementController {
 	}
 
 	@PostMapping("/search")
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public Resource<Page<UserDto>> searchUsers(@RequestBody Resource<UserDto> request) {
 		try {
 			log.info("Searching users");
@@ -89,7 +89,7 @@ public class UserManagementController {
 	}
 
 	@PostMapping
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public Resource<List<UserDto>> addUsers(@RequestBody List<UserDto> requestList) {
 		try {
 			log.info("Adding provided users");
@@ -109,7 +109,7 @@ public class UserManagementController {
 	}
 
 	@PutMapping
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public Resource<List<UserDto>> editUsers(@RequestBody List<UserDto> requestList) {
 		try {
 			log.info("Updating provided users");
@@ -129,7 +129,7 @@ public class UserManagementController {
 	}
 
 	@DeleteMapping
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public Resource<List<UserDto>> deleteUsers(@RequestBody List<UserDto> requestList) {
 		try {
 			log.info("Deleting provided users");

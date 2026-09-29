@@ -29,7 +29,7 @@ public class PurchaseManagementController {
 	MessageConfiguration messageConfig;
 
 	@GetMapping("/{userId}/cancel/{purchaseId}")
-	@PreAuthorize("hasRole('ROLE_USER') and #userId == principal.id")
+	@PreAuthorize("hasRole('USER') and #userId == principal.id")
 	public Resource<String> cancelPurchase(@PathVariable Integer userId, @PathVariable Integer purchaseId) {
 		try {
 			log.info("Cancelling purchase for id " + purchaseId);
@@ -45,7 +45,7 @@ public class PurchaseManagementController {
 	}
 
 	@GetMapping("/complete")
-	@PreAuthorize("hasRole('ROLE_MANAGER')")
+	@PreAuthorize("hasRole('MANAGER')")
 	public Resource<String> completePurchase() {
 		try {
 			log.info("Marking purchase orders with more than 30mins as complete");

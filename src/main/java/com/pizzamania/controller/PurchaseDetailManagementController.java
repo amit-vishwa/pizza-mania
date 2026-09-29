@@ -32,7 +32,7 @@ public class PurchaseDetailManagementController {
 	MessageConfiguration messageConfig;
 
 	@PostMapping("/add")
-	@PreAuthorize("hasRole('ROLE_USER')")
+	@PreAuthorize("hasRole('USER')")
 	public Resource<List<PurchaseDetailDto>> addPurchaseDetails(@RequestBody List<PurchaseDetailDto> requestList) {
 		try {
 			log.info("Adding provided purchaseDetails");
