@@ -1,14 +1,16 @@
 package com.pizzamania.security.utils;
 
-import java.security.Key;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Objects;
+
+import javax.crypto.SecretKey;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 
 import com.nimbusds.jwt.JWT;
@@ -17,10 +19,7 @@ import com.nimbusds.jwt.JWTParser;
 import com.pizzamania.security.dto.UserDto;
 import com.pizzamania.utility.Utility;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
@@ -35,6 +34,12 @@ public class JwtUtils {
 	@Value("${spring.app.jwtExpirationMs}")
 	private int jwtExpirationMs;
 
+	private final JwtDecoder jwtDecoder;
+
+	public JwtUtils(JwtDecoder jwtDecoder) {
+		this.jwtDecoder = jwtDecoder;
+	}
+
 	public JWT getJwtFromHeader(String bearerToken) {
 		return getJWTToken(bearerToken);
 	}
@@ -45,16 +50,28 @@ public class JwtUtils {
 		}
 		String[] splitHeaderValue = headerValue.split(" ");
 		String idTokenString = splitHeaderValue[1];
-		JWT idToken = null;
 		try {
-			idToken = JWTParser.parse(idTokenString);
+			JWT idToken = JWTParser.parse(idTokenString);
+			verifySignature(idToken, idTokenString);
 			if (isTokenExpired(idToken, idTokenString)) {
 				throw new BadCredentialsException("Token expired");
 			}
-		} catch (ParseException e) {
+			return idToken;
+		} catch (ParseException | io.jsonwebtoken.JwtException
+				| org.springframework.security.oauth2.jwt.JwtException | IllegalArgumentException e) {
 			throw new BadCredentialsException("Not a valid token", e);
 		}
-		return idToken;
+	}
+
+	private void verifySignature(JWT token, String tokenValue) {
+		String algorithm = token.getHeader().getAlgorithm().getName();
+		if (algorithm != null && algorithm.matches("HS(256|384|512)")) {
+			Jwts.parser().verifyWith(key()).build().parseSignedClaims(tokenValue);
+			return;
+		}
+		if (!"RS256".equals(algorithm) || jwtDecoder.decode(tokenValue) == null) {
+			throw new BadCredentialsException("Unsupported or unverifiable token");
+		}
 	}
 
 	private boolean isValidFormat(String headerValue) {
@@ -72,8 +89,8 @@ public class JwtUtils {
 		if (Utility.hasValue(idTokenString)) {
 			JWTClaimsSet claims = idToken.getJWTClaimsSet();
 			Long currentTimeInMs = System.currentTimeMillis();
-			Long expirationTimeInMs = claims.getExpirationTime().getTime();
-			if (Utility.hasValue(expirationTimeInMs) && expirationTimeInMs > currentTimeInMs) {
+			Date expirationTime = claims.getExpirationTime();
+			if (expirationTime != null && expirationTime.getTime() > currentTimeInMs) {
 				return false;
 			}
 		}
@@ -87,7 +104,7 @@ public class JwtUtils {
 				.compact();
 	}
 
-	private Key key() {
+	private SecretKey key() {
 		return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
 	}
 
@@ -112,26 +129,6 @@ public class JwtUtils {
 		}
 		logger.info("Identifier is " + identifier);
 		return identifier;
-	}
-
-	public JWT validateJwtToken(String authToken) {
-		try {
-			JWT token = JWTParser.parse(authToken);
-			if (Utility.hasValue(authToken)) {
-				return token;
-			}
-		} catch (MalformedJwtException e) {
-			logger.error("Invalid JWT token: {}", e.getMessage());
-		} catch (ExpiredJwtException e) {
-			logger.error("JWT token is expired: {}", e.getMessage());
-		} catch (UnsupportedJwtException e) {
-			logger.error("JWT token is unsupported: {}", e.getMessage());
-		} catch (IllegalArgumentException e) {
-			logger.error("JWT claims string is empty: {}", e.getMessage());
-		} catch (ParseException e) {
-			logger.error("JWT token string parse failed: {}", e.getMessage());
-		}
-		return null;
 	}
 
 }
