@@ -35,7 +35,7 @@ public class ProductManagementController {
 	MessageConfiguration messageConfig;
 
 	@PostMapping("/search")
-	@PreAuthorize("hasAnyRole('ROLE_MANAGER','ROLE_USER')")
+	@PreAuthorize("hasAnyRole('MANAGER','USER')")
 	public Resource<Page<ProductDto>> searchProducts(@RequestBody Resource<ProductDto> request) {
 		try {
 			log.info("Searching products");
@@ -56,7 +56,7 @@ public class ProductManagementController {
 	}
 
 	@PostMapping
-	@PreAuthorize("hasRole('ROLE_MANAGER')")
+	@PreAuthorize("hasRole('MANAGER')")
 	public Resource<List<ProductDto>> addProducts(@RequestBody List<ProductDto> requestList) {
 		try {
 			log.info("Adding provided products");
@@ -77,7 +77,7 @@ public class ProductManagementController {
 	}
 
 	@PutMapping
-	@PreAuthorize("hasRole('ROLE_MANAGER')")
+	@PreAuthorize("hasRole('MANAGER')")
 	public Resource<List<ProductDto>> editProducts(@RequestBody List<ProductDto> requestList) {
 		try {
 			log.info("Updating provided products");
@@ -98,7 +98,7 @@ public class ProductManagementController {
 	}
 
 	@DeleteMapping
-	@PreAuthorize("hasRole('ROLE_MANAGER')")
+	@PreAuthorize("hasRole('MANAGER')")
 	public Resource<List<ProductDto>> deleteProducts(@RequestBody List<ProductDto> requestList) {
 		try {
 			log.info("Deleting provided products");

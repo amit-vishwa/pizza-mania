@@ -35,7 +35,7 @@ public class CartManagementController {
 	MessageConfiguration messageConfig;
 
 	@PostMapping("/search")
-	@PreAuthorize("hasRole('ROLE_USER')")
+	@PreAuthorize("hasRole('USER')")
 	public Resource<Page<CartDto>> searchItems(@RequestBody Resource<CartDto> request) {
 		try {
 			log.info("Searching cart items");
