@@ -43,6 +43,7 @@ public class CartManagementController {
 				return new Resource<Page<CartDto>>(null, null, messageConfig.getMessage("missingSearchCriteria"),
 						HttpStatus.BAD_REQUEST);
 			}
+			Utility.boundApiSearch(request.getSearchCriteria());
 			request.getSearchCriteria().getModel().setUserId(userManagementService.getLoggedInUserId());
 			request.getSearchCriteria().getModel().setRecordStatus(GlobalConstants.ACTIVE_RECORD_STATUS);
 			Page<CartDto> response = cartManagementService.searchItems(request.getSearchCriteria());

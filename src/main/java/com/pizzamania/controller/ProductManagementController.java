@@ -43,6 +43,7 @@ public class ProductManagementController {
 				return new Resource<Page<ProductDto>>(null, null, messageConfig.getMessage("missingSearchCriteria"),
 						HttpStatus.BAD_REQUEST);
 			}
+			Utility.boundApiSearch(request.getSearchCriteria());
 			Page<ProductDto> response = productManagementService.searchProducts(request.getSearchCriteria());
 			if (!Utility.hasEntries(response)) {
 				return new Resource<Page<ProductDto>>(null, null, messageConfig.getMessage("notFoundException"),

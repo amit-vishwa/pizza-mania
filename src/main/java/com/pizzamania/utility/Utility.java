@@ -34,6 +34,8 @@ import jakarta.persistence.criteria.Root;
 
 public class Utility {
 
+	public static final int MAX_API_PAGE_SIZE = 100;
+
 	private static Logger logger = LoggerFactory.getLogger(Utility.class);
 
 	// Item has value (not null and size > 0)
@@ -71,6 +73,25 @@ public class Utility {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Apply safe paging bounds to search criteria received from an API request.
+	 * Internal service searches remain unchanged and may still explicitly use
+	 * {@link Paging#NO_PAGING} when an unpaged query is required.
+	 */
+	public static <T> void boundApiSearch(SearchCriteria<T> searchCriteria) {
+		Paging paging = searchCriteria.getPaging();
+		if (paging == null) {
+			paging = new Paging();
+			searchCriteria.setPaging(paging);
+		}
+		if (paging.getStart() < 0) {
+			paging.setStart(0);
+		}
+		if (paging.getLimit() <= 0 || paging.getLimit() > MAX_API_PAGE_SIZE) {
+			paging.setLimit(MAX_API_PAGE_SIZE);
+		}
 	}
 
 	// Print or log data

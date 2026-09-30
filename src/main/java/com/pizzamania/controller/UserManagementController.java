@@ -76,6 +76,7 @@ public class UserManagementController {
 				return new Resource<Page<UserDto>>(null, null, messageConfig.getMessage("missingSearchCriteria"),
 						HttpStatus.BAD_REQUEST);
 			}
+			Utility.boundApiSearch(request.getSearchCriteria());
 			Page<UserDto> response = userManagementService.searchUsers(request.getSearchCriteria());
 			if (!Utility.hasEntries(response)) {
 				return new Resource<Page<UserDto>>(null, null, messageConfig.getMessage("notFoundException"),
