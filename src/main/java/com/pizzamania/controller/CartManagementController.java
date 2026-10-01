@@ -1,5 +1,7 @@
 package com.pizzamania.controller;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ import com.pizzamania.utility.Utility;
 public class CartManagementController {
 
 	private static Logger log = LoggerFactory.getLogger(CartManagementController.class);
+	private static final Set<String> SEARCH_FIELDS = Set.of("cartId", "userId", "purchaseId", "status",
+			"statusTimestamp", "recordStatus", "createdOnTimestamp", "createdByUser", "createdByProcess",
+			"lastUpdatedOnTimestamp", "lastUpdatedByUser", "lastUpdatedByProcess");
 
 	@Autowired
 	CartManagementService cartManagementService;
@@ -43,7 +48,7 @@ public class CartManagementController {
 				return new Resource<Page<CartDto>>(null, null, messageConfig.getMessage("missingSearchCriteria"),
 						HttpStatus.BAD_REQUEST);
 			}
-			Utility.boundApiSearch(request.getSearchCriteria());
+			Utility.boundApiSearch(request.getSearchCriteria(), SEARCH_FIELDS);
 			request.getSearchCriteria().getModel().setUserId(userManagementService.getLoggedInUserId());
 			request.getSearchCriteria().getModel().setRecordStatus(GlobalConstants.ACTIVE_RECORD_STATUS);
 			Page<CartDto> response = cartManagementService.searchItems(request.getSearchCriteria());
