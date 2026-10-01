@@ -1,6 +1,7 @@
 package com.pizzamania.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,9 @@ import com.pizzamania.utility.Utility;
 public class UserManagementController {
 
 	private static Logger log = LoggerFactory.getLogger(UserManagementController.class);
+	private static final Set<String> SEARCH_FIELDS = Set.of("userId", "userName", "userType", "recordStatus",
+			"createdOnTimestamp", "createdByUser", "createdByProcess", "lastUpdatedOnTimestamp",
+			"lastUpdatedByUser", "lastUpdatedByProcess");
 
 	@Autowired
 	UserManagementService userManagementService;
@@ -76,7 +80,7 @@ public class UserManagementController {
 				return new Resource<Page<UserDto>>(null, null, messageConfig.getMessage("missingSearchCriteria"),
 						HttpStatus.BAD_REQUEST);
 			}
-			Utility.boundApiSearch(request.getSearchCriteria());
+			Utility.boundApiSearch(request.getSearchCriteria(), SEARCH_FIELDS);
 			Page<UserDto> response = userManagementService.searchUsers(request.getSearchCriteria());
 			if (!Utility.hasEntries(response)) {
 				return new Resource<Page<UserDto>>(null, null, messageConfig.getMessage("notFoundException"),

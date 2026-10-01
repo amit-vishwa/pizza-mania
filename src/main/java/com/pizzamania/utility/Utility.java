@@ -5,6 +5,7 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.rowset.serial.SerialBlob;
 
@@ -91,6 +92,39 @@ public class Utility {
 		}
 		if (paging.getLimit() <= 0 || paging.getLimit() > MAX_API_PAGE_SIZE) {
 			paging.setLimit(MAX_API_PAGE_SIZE);
+		}
+	}
+
+	/**
+	 * Apply paging bounds and reject dynamic field names that are not explicitly
+	 * supported by the API endpoint.
+	 */
+	public static <T> void boundApiSearch(SearchCriteria<T> searchCriteria, Set<String> allowedFields) {
+		boundApiSearch(searchCriteria);
+		validateApiSearchField(searchCriteria.getPaging().getSort(), allowedFields);
+		for (SortField sortField : searchCriteria.getSortFields()) {
+			validateApiSearchField(sortField == null ? null : sortField.getName(), allowedFields);
+		}
+		if (searchCriteria.getSortCriteria() != null) {
+			validateApiSearchFields(searchCriteria.getSortCriteria().getAscending(), allowedFields);
+			validateApiSearchFields(searchCriteria.getSortCriteria().getDescending(), allowedFields);
+		}
+		if (searchCriteria.getDataFilterList() != null) {
+			for (DataFilter dataFilter : searchCriteria.getDataFilterList()) {
+				validateApiSearchField(dataFilter == null ? null : dataFilter.getName(), allowedFields);
+			}
+		}
+	}
+
+	private static void validateApiSearchFields(List<String> fields, Set<String> allowedFields) {
+		if (fields != null) {
+			fields.forEach(field -> validateApiSearchField(field, allowedFields));
+		}
+	}
+
+	private static void validateApiSearchField(String field, Set<String> allowedFields) {
+		if (field != null && !allowedFields.contains(field)) {
+			throw new IllegalArgumentException("Unsupported search field");
 		}
 	}
 

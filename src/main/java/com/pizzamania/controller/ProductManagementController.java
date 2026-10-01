@@ -1,6 +1,7 @@
 package com.pizzamania.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,10 @@ import com.pizzamania.utility.Utility;
 public class ProductManagementController {
 
 	private static Logger log = LoggerFactory.getLogger(ProductManagementController.class);
+	private static final Set<String> SEARCH_FIELDS = Set.of("productId", "productName", "productDescription",
+			"productCost", "productQuantity", "productAvailable", "recordStatus", "createdOnTimestamp",
+			"createdByUser", "createdByProcess", "lastUpdatedOnTimestamp", "lastUpdatedByUser",
+			"lastUpdatedByProcess");
 
 	@Autowired
 	ProductManagementService productManagementService;
@@ -43,7 +48,7 @@ public class ProductManagementController {
 				return new Resource<Page<ProductDto>>(null, null, messageConfig.getMessage("missingSearchCriteria"),
 						HttpStatus.BAD_REQUEST);
 			}
-			Utility.boundApiSearch(request.getSearchCriteria());
+			Utility.boundApiSearch(request.getSearchCriteria(), SEARCH_FIELDS);
 			Page<ProductDto> response = productManagementService.searchProducts(request.getSearchCriteria());
 			if (!Utility.hasEntries(response)) {
 				return new Resource<Page<ProductDto>>(null, null, messageConfig.getMessage("notFoundException"),
