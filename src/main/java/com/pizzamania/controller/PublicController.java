@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pizzamania.constant.GlobalConstants;
 import com.pizzamania.enumeration.ProcessEnum;
 import com.pizzamania.exception.EntityMissingException;
+import com.pizzamania.security.dto.RoleDto;
 import com.pizzamania.security.dto.UserDto;
+import com.pizzamania.security.enums.AppRole;
 import com.pizzamania.security.response.LoginResponse;
 import com.pizzamania.service.UserManagementService;
 import com.pizzamania.utility.MessageConfiguration;
@@ -77,6 +79,9 @@ public class PublicController {
 			}
 			List<UserDto> requestList = new ArrayList<UserDto>();
 			request.setUserType(GlobalConstants.EXTERNAL_USER);
+			RoleDto role = new RoleDto();
+			role.setRoleName(AppRole.ROLE_USER);
+			request.setRole(role);
 			request.setCreatedByUser(request.getUserName());
 			request.setCreatedByProcess(ProcessEnum.REGISTER_USERS.getProcessCode());
 			requestList.add(request);
