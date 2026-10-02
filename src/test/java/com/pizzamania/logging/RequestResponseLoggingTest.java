@@ -74,7 +74,7 @@ class RequestResponseLoggingTest {
         rawRequest.addHeader("Authorization", "Bearer header-secret");
         rawRequest.setContent("{\"password\":\"request-secret\",\"product\":\"Pizza\"}"
                 .getBytes(StandardCharsets.UTF_8));
-        ContentCachingRequestWrapper request = new ContentCachingRequestWrapper(rawRequest);
+        ContentCachingRequestWrapper request = new ContentCachingRequestWrapper(rawRequest, 64 * 1024);
         request.getInputStream().readAllBytes();
         ContentCachingResponseWrapper response = new ContentCachingResponseWrapper(new MockHttpServletResponse());
         response.setStatus(201);
@@ -103,7 +103,7 @@ class RequestResponseLoggingTest {
         MockHttpServletRequest rawRequest = new MockHttpServletRequest("GET", "/api/public/products");
         rawRequest.setQueryString("auth=secret");
 
-        logging.afterRequest(new ContentCachingRequestWrapper(rawRequest),
+        logging.afterRequest(new ContentCachingRequestWrapper(rawRequest, 64 * 1024),
                 new ContentCachingResponseWrapper(new MockHttpServletResponse()));
 
         verifyNoInteractions(logging.logRepository);
@@ -120,7 +120,7 @@ class RequestResponseLoggingTest {
         logger.addAppender(appender);
         try {
             logging.afterRequest(new ContentCachingRequestWrapper(
-                    new MockHttpServletRequest("GET", "/api/auth/products")),
+                    new MockHttpServletRequest("GET", "/api/auth/products"), 64 * 1024),
                     new ContentCachingResponseWrapper(new MockHttpServletResponse()));
 
             assertEquals(1, appender.list.size());
