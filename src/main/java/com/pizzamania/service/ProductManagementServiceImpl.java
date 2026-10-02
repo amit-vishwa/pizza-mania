@@ -1,5 +1,6 @@
 package com.pizzamania.service;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +105,8 @@ public class ProductManagementServiceImpl implements ProductManagementService {
 	private boolean isValidProduct(ProductDto request) throws EntityMissingException, ResourceAlreadyExistsException {
 		if (Utility.hasValue(request) && Utility.hasValue(request.getProductName())
 				&& Utility.hasValue(request.getProductDescription()) && Utility.hasValue(request.getProductCost())
-				&& Utility.hasValue(request.getProductQuantity()) && request.getProductCost() > 0
+				&& Utility.hasValue(request.getProductQuantity())
+				&& request.getProductCost().compareTo(BigDecimal.ZERO) > 0
 				&& request.getProductQuantity() > 0) {
 			ProductDto product = new ProductDto();
 			product.setProductName(request.getProductName());
@@ -171,7 +173,8 @@ public class ProductManagementServiceImpl implements ProductManagementService {
 				productCopy.setProductDescription(request.getProductDescription());
 				isRecordUpdated = true;
 			}
-			if (Utility.hasValue(request.getProductCost()) && request.getProductCost() >= 0) {
+			if (Utility.hasValue(request.getProductCost())
+					&& request.getProductCost().compareTo(BigDecimal.ZERO) >= 0) {
 				productCopy.setProductCost(request.getProductCost());
 				isRecordUpdated = true;
 			}

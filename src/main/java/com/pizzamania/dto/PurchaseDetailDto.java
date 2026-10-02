@@ -1,5 +1,6 @@
 package com.pizzamania.dto;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,8 +21,8 @@ public class PurchaseDetailDto {
 	private Integer purchaseId;
 	private Integer productId;
 	private Integer productQuantity;
-	private Double productCost;
-	private Double totalProductCost;
+	private BigDecimal productCost;
+	private BigDecimal totalProductCost;
 	private String status;
 	private Timestamp statusTimestamp;
 	private String recordStatus;

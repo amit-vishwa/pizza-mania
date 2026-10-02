@@ -1,5 +1,6 @@
 package com.pizzamania.dto;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class PurchaseDto {
 
 	private Integer purchaseId;
 	private Integer purchaseItems;
-	private Double purchaseAmount;
+	private BigDecimal purchaseAmount;
 	private String status;
 	private Timestamp statusTimestamp;
 	private String recordStatus;

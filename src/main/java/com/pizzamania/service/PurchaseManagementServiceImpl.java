@@ -1,5 +1,6 @@
 package com.pizzamania.service;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,7 +129,7 @@ public class PurchaseManagementServiceImpl implements PurchaseManagementService 
 	private boolean validPurchase(PurchaseDto request) {
 		if (Utility.hasValue(request) && Utility.hasValue(request.getPurchaseItems())
 				&& Utility.hasValue(request.getPurchaseAmount()) && request.getPurchaseItems() > 0
-				&& request.getPurchaseAmount() > 0) {
+				&& request.getPurchaseAmount().compareTo(BigDecimal.ZERO) > 0) {
 			return true;
 		}
 		log.info("Not a valid purchase request!");

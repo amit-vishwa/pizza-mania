@@ -1,5 +1,6 @@
 package com.pizzamania.service;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,7 +134,8 @@ public class PurchaseDetailManagementServiceImpl implements PurchaseDetailManage
 			Page<ProductDto> productResponse = fetchProductById(request.getProductId());
 			if (Utility.hasEntries(productResponse)) {
 				request.setProductCost(productResponse.getPageEntries().get(0).getProductCost());
-				request.setTotalProductCost(request.getProductCost() * request.getProductQuantity());
+				request.setTotalProductCost(
+						request.getProductCost().multiply(BigDecimal.valueOf(request.getProductQuantity())));
 				updateProductQuantity(productResponse.getPageEntries(), request, process);
 				return true;
 			}
@@ -170,7 +172,7 @@ public class PurchaseDetailManagementServiceImpl implements PurchaseDetailManage
 	}
 
 	private Integer generatePurchaseId(List<PurchaseDetail> purchaseDetails) throws CRUDFailureException {
-		Double purchaseAmount = purchaseDetails.stream().mapToDouble(item -> item.getTotalProductCost()).sum();
+		BigDecimal purchaseAmount = totalPurchaseAmount(purchaseDetails);
 		PurchaseDto purchaseOrder = new PurchaseDto();
 		purchaseOrder.setPurchaseItems(purchaseDetails.size());
 		purchaseOrder.setPurchaseAmount(purchaseAmount);
@@ -182,6 +184,11 @@ public class PurchaseDetailManagementServiceImpl implements PurchaseDetailManage
 			return purchaseResponse.get(0).getPurchaseId();
 		}
 		throw new CRUDFailureException("Failed to generate purchase id");
+	}
+
+	static BigDecimal totalPurchaseAmount(List<PurchaseDetail> purchaseDetails) {
+		return purchaseDetails.stream().map(PurchaseDetail::getTotalProductCost).reduce(BigDecimal.ZERO,
+				BigDecimal::add);
 	}
 
 	private void saveCart(PurchaseDetail purchaseDetails, Integer purchaseId) throws CRUDFailureException {
