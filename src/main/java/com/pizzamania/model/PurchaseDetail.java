@@ -1,5 +1,6 @@
 package com.pizzamania.model;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -38,11 +39,11 @@ public class PurchaseDetail {
 	@Column(name = "product_quantity")
 	private Integer productQuantity;
 
-	@Column(name = "product_cost")
-	private Double productCost;
+	@Column(name = "product_cost", precision = 5, scale = 2)
+	private BigDecimal productCost;
 
-	@Column(name = "total_product_cost")
-	private Double totalProductCost;
+	@Column(name = "total_product_cost", precision = 5, scale = 2)
+	private BigDecimal totalProductCost;
 
 	@Column(name = "status")
 	private String status;
