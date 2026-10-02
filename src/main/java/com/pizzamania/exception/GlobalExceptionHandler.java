@@ -107,6 +107,16 @@ public class GlobalExceptionHandler {
 	}
 
 	/*
+	 * To handle request parameter constraint violations
+	 */
+	@ExceptionHandler(value = jakarta.validation.ConstraintViolationException.class)
+	public Resource<String> requestConstraintViolationException(
+			jakarta.validation.ConstraintViolationException e) {
+		log.info("RequestConstraintViolationException", e);
+		return new Resource<String>(null, null, messageConfig.getMessage("badRequest"), HttpStatus.BAD_REQUEST);
+	}
+
+	/*
 	 * To handle unique key constraint violation
 	 */
 	@ExceptionHandler(value = DuplicateKeyException.class)

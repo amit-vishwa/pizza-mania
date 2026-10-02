@@ -735,7 +735,7 @@
 				{
 					"name": "cancel purchase order",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-XSRF-TOKEN",
@@ -775,7 +775,7 @@
 								}
 							]
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-XSRF-TOKEN",
