@@ -5,10 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 import com.pizzamania.exception.EntityMissingException;
 import com.pizzamania.service.PurchaseManagementService;
@@ -16,8 +17,11 @@ import com.pizzamania.utility.MessageConfiguration;
 import com.pizzamania.utility.Resource;
 import com.pizzamania.utility.Utility;
 
+import jakarta.validation.constraints.Positive;
+
 @RestController
 @RequestMapping("/api/auth/purchase")
+@Validated
 public class PurchaseManagementController {
 
 	private static Logger log = LoggerFactory.getLogger(PurchaseManagementController.class);
@@ -28,9 +32,10 @@ public class PurchaseManagementController {
 	@Autowired
 	MessageConfiguration messageConfig;
 
-	@GetMapping("/{userId}/cancel/{purchaseId}")
+	@PostMapping("/{userId}/cancel/{purchaseId}")
 	@PreAuthorize("hasRole('USER') and #userId == principal.id")
-	public Resource<String> cancelPurchase(@PathVariable Integer userId, @PathVariable Integer purchaseId) {
+	public Resource<String> cancelPurchase(@PathVariable @Positive Integer userId,
+			@PathVariable @Positive Integer purchaseId) {
 		try {
 			log.info("Cancelling purchase for id " + purchaseId);
 			if (!Utility.hasValue(userId) || !Utility.hasValue(purchaseId)) {
@@ -44,7 +49,7 @@ public class PurchaseManagementController {
 		}
 	}
 
-	@GetMapping("/complete")
+	@PostMapping("/complete")
 	@PreAuthorize("hasRole('MANAGER')")
 	public Resource<String> completePurchase() {
 		try {
