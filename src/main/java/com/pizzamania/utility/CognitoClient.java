@@ -17,20 +17,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.amazonaws.services.cognitoidp.model.AWSCognitoIdentityProviderException;
-import com.amazonaws.services.cognitoidp.model.AdminCreateUserRequest;
-import com.amazonaws.services.cognitoidp.model.AdminDeleteUserRequest;
-import com.amazonaws.services.cognitoidp.model.AdminDeleteUserResult;
-import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest;
-import com.amazonaws.services.cognitoidp.model.AdminGetUserResult;
-import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest;
-import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesResult;
-import com.amazonaws.services.cognitoidp.model.AttributeType;
-import com.amazonaws.services.cognitoidp.model.ListUsersRequest;
-import com.amazonaws.services.cognitoidp.model.ListUsersResult;
-import com.amazonaws.services.cognitoidp.model.UserType;
 import com.pizzamania.constant.CognitoConstants;
 import com.pizzamania.security.model.User;
+
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminDeleteUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminDeleteUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.CognitoIdentityProviderException;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.UserType;
 
 @Component
 public class CognitoClient {
@@ -61,23 +62,23 @@ public class CognitoClient {
 	public UserType createUser(User user) {
 		try {
 			List<AttributeType> userAttributes = new ArrayList<>();
-			AttributeType preferredUsername = new AttributeType().withName(CognitoConstants.PREFERRED_USERNAME)
-					.withValue(user.getUserName());
-			AttributeType emailAttribute = new AttributeType().withName(CognitoConstants.EMAIL)
-					.withValue(user.getUserName().toLowerCase());
-			AttributeType emailVerifiedAttribute = new AttributeType().withName(CognitoConstants.EMAIL_VERIFIED)
-					.withValue(CognitoConstants.EMAIL_VERIFIED_VALUE);
+			AttributeType preferredUsername = AttributeType.builder().name(CognitoConstants.PREFERRED_USERNAME)
+					.value(user.getUserName()).build();
+			AttributeType emailAttribute = AttributeType.builder().name(CognitoConstants.EMAIL)
+					.value(user.getUserName().toLowerCase()).build();
+			AttributeType emailVerifiedAttribute = AttributeType.builder().name(CognitoConstants.EMAIL_VERIFIED)
+					.value(CognitoConstants.EMAIL_VERIFIED_VALUE).build();
 			userAttributes.add(preferredUsername);
 			userAttributes.add(emailAttribute);
 			userAttributes.add(emailVerifiedAttribute);
-			AdminCreateUserRequest userRequest = new AdminCreateUserRequest().withUserPoolId(userPoolId)
-					.withUsername(user.getUserName().toLowerCase()).withUserAttributes(userAttributes);
+			AdminCreateUserRequest userRequest = AdminCreateUserRequest.builder().userPoolId(userPoolId)
+					.username(user.getUserName().toLowerCase()).userAttributes(userAttributes).build();
 			UserType cognitoUser = cognitoConfiguration.adminCreateUser(userRequest);
 			return cognitoUser;
-		} catch (AWSCognitoIdentityProviderException awsCognitoIdentityProviderException) {
-			log.error("CreateUser: AWSCognitoIdentityProviderException {}",
+		} catch (CognitoIdentityProviderException awsCognitoIdentityProviderException) {
+			log.error("CreateUser: CognitoIdentityProviderException {}",
 					awsCognitoIdentityProviderException.toString());
-			return new UserType();
+			return UserType.builder().build();
 		} catch (Exception e) {
 			log.error("Cognito create user general error " + e.getMessage());
 			return null;
@@ -90,13 +91,13 @@ public class CognitoClient {
 	 * @return AdminGetUserResult - That contains user metadata
 	 * @params email
 	 */
-	public AdminGetUserResult getUser(String email) {
+	public AdminGetUserResponse getUser(String email) {
 		try {
-			AdminGetUserRequest userRequest = new AdminGetUserRequest().withUserPoolId(userPoolId).withUsername(email);
-			AdminGetUserResult userResult = cognitoConfiguration.adminGetUser(userRequest);
+			AdminGetUserRequest userRequest = AdminGetUserRequest.builder().userPoolId(userPoolId).username(email).build();
+			AdminGetUserResponse userResult = cognitoConfiguration.adminGetUser(userRequest);
 			return userResult;
-		} catch (AWSCognitoIdentityProviderException awsCognitoIdentityProviderException) {
-			log.error("CreateUser: AWSCognitoIdentityProviderException {}",
+		} catch (CognitoIdentityProviderException awsCognitoIdentityProviderException) {
+			log.error("CreateUser: CognitoIdentityProviderException {}",
 					awsCognitoIdentityProviderException.toString());
 			return null;
 		} catch (Exception e) {
@@ -112,34 +113,34 @@ public class CognitoClient {
 	 *         user data
 	 * @params email, username, password, firstName, lastName
 	 */
-	public AdminGetUserResult updateUser(User user) {
+	public AdminGetUserResponse updateUser(User user) {
 		try {
 			List<AttributeType> userAttributes = new ArrayList<>();
 			if (null != user.getUserName()) {
-				AttributeType preferredUsername = new AttributeType().withName(CognitoConstants.PREFERRED_USERNAME)
-						.withValue(user.getUserName());
+				AttributeType preferredUsername = AttributeType.builder().name(CognitoConstants.PREFERRED_USERNAME)
+						.value(user.getUserName()).build();
 				userAttributes.add(preferredUsername);
 			}
 
-			AdminUpdateUserAttributesRequest userAttributesRequest = new AdminUpdateUserAttributesRequest()
-					.withUserPoolId(userPoolId).withUsername(user.getUserName().toLowerCase())
-					.withUserAttributes(userAttributes);
+			AdminUpdateUserAttributesRequest userAttributesRequest = AdminUpdateUserAttributesRequest.builder()
+					.userPoolId(userPoolId).username(user.getUserName().toLowerCase())
+					.userAttributes(userAttributes).build();
 
 			// If the action is successful, the method sends back an HTTP 200
 			// response with an empty HTTP body.
-			AdminUpdateUserAttributesResult userAttributesResult = cognitoConfiguration
+			AdminUpdateUserAttributesResponse userAttributesResult = cognitoConfiguration
 					.adminUpdateUserAttributes(userAttributesRequest);
 			log.info("User attributes update result:  {}", userAttributesResult);
 
-			AdminGetUserRequest userRequest = new AdminGetUserRequest().withUserPoolId(userPoolId)
-					.withUsername(user.getUserName().toLowerCase());
-			AdminGetUserResult userResult = cognitoConfiguration.adminGetUser(userRequest);
+			AdminGetUserRequest userRequest = AdminGetUserRequest.builder().userPoolId(userPoolId)
+					.username(user.getUserName().toLowerCase()).build();
+			AdminGetUserResponse userResult = cognitoConfiguration.adminGetUser(userRequest);
 			log.info("User updated details:  {}", userResult);
 			return userResult;
 
-		} catch (AWSCognitoIdentityProviderException awsCognitoIdentityProviderException) {
-			log.error("UpdateUser: AWSCognitoIdentityProviderException {}",
-					awsCognitoIdentityProviderException.getErrorMessage());
+		} catch (CognitoIdentityProviderException awsCognitoIdentityProviderException) {
+			log.error("UpdateUser: CognitoIdentityProviderException {}",
+					awsCognitoIdentityProviderException.awsErrorDetails().errorMessage());
 			return null;
 		} catch (Exception e) {
 			log.error("Cognito update user general error " + e.getMessage());
@@ -155,16 +156,16 @@ public class CognitoClient {
 	 */
 	public Boolean deleteUser(String email) {
 		try {
-			AdminDeleteUserRequest userRequest = new AdminDeleteUserRequest().withUserPoolId(userPoolId)
-					.withUsername(email);
+			AdminDeleteUserRequest userRequest = AdminDeleteUserRequest.builder().userPoolId(userPoolId)
+					.username(email).build();
 
 			// If the action is successful, the method sends back an HTTP 200
 			// response with an empty HTTP body.
-			AdminDeleteUserResult userResult = cognitoConfiguration.adminDeleteUser(userRequest);
+			AdminDeleteUserResponse userResult = cognitoConfiguration.adminDeleteUser(userRequest);
 			log.info("User deletion result: {}", userResult);
 			return true;
-		} catch (AWSCognitoIdentityProviderException awsCognitoIdentityProviderException) {
-			log.error("DeleteUser: AWSCognitoIdentityProviderException {}",
+		} catch (CognitoIdentityProviderException awsCognitoIdentityProviderException) {
+			log.error("DeleteUser: CognitoIdentityProviderException {}",
 					awsCognitoIdentityProviderException.toString());
 			return false;
 		} catch (Exception e) {
@@ -173,17 +174,17 @@ public class CognitoClient {
 		}
 	}
 
-	public AdminGetUserResult updateUserEmail(CognitoUserAttributes cognitoUserAttributes) {
+	public AdminGetUserResponse updateUserEmail(CognitoUserAttributes cognitoUserAttributes) {
 
 		AdminUpdateUserAttributesRequest adminUpdateUserAttributesRequest = constructAdminObjects(
 				cognitoUserAttributes);
-		AdminUpdateUserAttributesResult userAttributesResult = cognitoConfiguration
+		AdminUpdateUserAttributesResponse userAttributesResult = cognitoConfiguration
 				.adminUpdateUserAttributes(adminUpdateUserAttributesRequest);
 		log.info("User attributes update result:  {}", userAttributesResult);
 
-		AdminGetUserRequest userRequest = new AdminGetUserRequest().withUserPoolId(userPoolId)
-				.withUsername(cognitoUserAttributes.getEmail());
-		AdminGetUserResult userResult = cognitoConfiguration.adminGetUser(userRequest);
+		AdminGetUserRequest userRequest = AdminGetUserRequest.builder().userPoolId(userPoolId)
+				.username(cognitoUserAttributes.getEmail()).build();
+		AdminGetUserResponse userResult = cognitoConfiguration.adminGetUser(userRequest);
 		log.info("User updated details:  {}", userResult);
 
 		return userResult;
@@ -191,19 +192,19 @@ public class CognitoClient {
 
 	private AdminUpdateUserAttributesRequest constructAdminObjects(CognitoUserAttributes cognitoUserAttributes) {
 		List<AttributeType> userAttributes = createUserAttributes(cognitoUserAttributes);
-		AdminUpdateUserAttributesRequest adminUpdateUserAttributesRequest = new AdminUpdateUserAttributesRequest()
-				.withUsername(cognitoUserAttributes.getUsername()).withUserPoolId(userPoolId)
-				.withUserAttributes(userAttributes);
+		AdminUpdateUserAttributesRequest adminUpdateUserAttributesRequest = AdminUpdateUserAttributesRequest.builder()
+				.username(cognitoUserAttributes.getUsername()).userPoolId(userPoolId)
+				.userAttributes(userAttributes).build();
 		return adminUpdateUserAttributesRequest;
 
 	}
 
 	private List<AttributeType> createUserAttributes(CognitoUserAttributes cognitoUserAttributes) {
 		List<AttributeType> userAttributes = new ArrayList<>();
-		AttributeType emailAttribute = new AttributeType().withName(CognitoConstants.EMAIL)
-				.withValue(cognitoUserAttributes.getEmail().toLowerCase());
-		AttributeType emailVerifiedAttribute = new AttributeType().withName(CognitoConstants.EMAIL_VERIFIED)
-				.withValue(CognitoConstants.EMAIL_VERIFIED_VALUE);
+		AttributeType emailAttribute = AttributeType.builder().name(CognitoConstants.EMAIL)
+				.value(cognitoUserAttributes.getEmail().toLowerCase()).build();
+		AttributeType emailVerifiedAttribute = AttributeType.builder().name(CognitoConstants.EMAIL_VERIFIED)
+				.value(CognitoConstants.EMAIL_VERIFIED_VALUE).build();
 		userAttributes.add(emailAttribute);
 		userAttributes.add(emailVerifiedAttribute);
 		return userAttributes;
@@ -216,20 +217,20 @@ public class CognitoClient {
 	 * @return List<AdminGetUserResult>- That contains user metadata
 	 * @params
 	 */
-	public List<AdminGetUserResult> bulkUserEmailUpate() {
+	public List<AdminGetUserResponse> bulkUserEmailUpate() {
 		try {
 
-			List<Callable<AdminGetUserResult>> callableTasksList = new ArrayList<>();
-			List<AdminGetUserResult> adminGetUserResultList = new ArrayList<>();
+			List<Callable<AdminGetUserResponse>> callableTasksList = new ArrayList<>();
+			List<AdminGetUserResponse> adminGetUserResultList = new ArrayList<>();
 			ExecutorService service = Executors.newFixedThreadPool(5);
-			ListUsersResult usersResult = listAllUsersfromCognito();
+			ListUsersResponse usersResult = listAllUsersfromCognito();
 			Pattern pattern = Pattern.compile(".*[A-Z].*");
 			List<UserType> filteredUsers = new ArrayList<>();
 			if (!ObjectUtils.isEmpty(usersResult)) {
-				for (UserType user : usersResult.getUsers()) {
-					for (AttributeType attributeType : user.getAttributes()) {
-						if (attributeType.getName().equals(CognitoConstants.EMAIL)
-								&& pattern.matcher(attributeType.getValue()).matches()) {
+				for (UserType user : usersResult.users()) {
+					for (AttributeType attributeType : user.attributes()) {
+						if (attributeType.name().equals(CognitoConstants.EMAIL)
+								&& pattern.matcher(attributeType.value()).matches()) {
 							filteredUsers.add(user);
 						}
 					}
@@ -240,14 +241,14 @@ public class CognitoClient {
 					List<CognitoUserAttributes> cognitoUserAttributesList = convertUserObjectToCognitoAttributes(
 							filteredUsers);
 					for (CognitoUserAttributes cognitoUserAttributes : cognitoUserAttributesList) {
-						Callable<AdminGetUserResult> callableTask = () -> {
+						Callable<AdminGetUserResponse> callableTask = () -> {
 							return updateUserEmail(cognitoUserAttributes);
 						};
 						callableTasksList.add(callableTask);
 					}
-					List<Future<AdminGetUserResult>> futures = service.invokeAll(callableTasksList);
+					List<Future<AdminGetUserResponse>> futures = service.invokeAll(callableTasksList);
 
-					for (Future<AdminGetUserResult> data : futures) {
+					for (Future<AdminGetUserResponse> data : futures) {
 						adminGetUserResultList.add(data.get());
 					}
 				}
@@ -256,8 +257,8 @@ public class CognitoClient {
 			service.shutdown();
 			service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 			return adminGetUserResultList;
-		} catch (AWSCognitoIdentityProviderException awsCognitoIdentityProviderException) {
-			log.error("UpdateUser: AWSCognitoIdentityProviderException {}",
+		} catch (CognitoIdentityProviderException awsCognitoIdentityProviderException) {
+			log.error("UpdateUser: CognitoIdentityProviderException {}",
 					awsCognitoIdentityProviderException.toString());
 			return null;
 		} catch (Exception e) {
@@ -270,10 +271,10 @@ public class CognitoClient {
 		List<CognitoUserAttributes> cognitoUserAttributesList = new ArrayList<>();
 		for (UserType userType : filteredUsers) {
 			CognitoUserAttributes cognitoUserAttribute = new CognitoUserAttributes();
-			cognitoUserAttribute.setUsername(userType.getUsername());
-			for (AttributeType attributeType : userType.getAttributes()) {
-				if (attributeType.getName().equals(CognitoConstants.EMAIL)) {
-					cognitoUserAttribute.setEmail(attributeType.getValue().toLowerCase());
+			cognitoUserAttribute.setUsername(userType.username());
+			for (AttributeType attributeType : userType.attributes()) {
+				if (attributeType.name().equals(CognitoConstants.EMAIL)) {
+					cognitoUserAttribute.setEmail(attributeType.value().toLowerCase());
 				}
 			}
 			cognitoUserAttributesList.add(cognitoUserAttribute);
@@ -281,23 +282,22 @@ public class CognitoClient {
 		return cognitoUserAttributesList;
 	}
 
-	public ListUsersResult listAllUsersfromCognito() {
-		ListUsersResult listUsersResult;
+	public ListUsersResponse listAllUsersfromCognito() {
+		ListUsersResponse listUsersResult;
 		try {
-			ListUsersRequest usersRequest = new ListUsersRequest().withUserPoolId(userPoolId);
+			ListUsersRequest usersRequest = ListUsersRequest.builder().userPoolId(userPoolId).build();
 			listUsersResult = cognitoConfiguration.listAllUsers(usersRequest);
-			List<UserType> users = listUsersResult.getUsers();
-			if (!ObjectUtils.isEmpty(listUsersResult.getPaginationToken())) {
+			List<UserType> users = new ArrayList<>(listUsersResult.users());
+			if (!ObjectUtils.isEmpty(listUsersResult.paginationToken())) {
 				do {
-					usersRequest.setPaginationToken(listUsersResult.getPaginationToken());
+					usersRequest = usersRequest.toBuilder().paginationToken(listUsersResult.paginationToken()).build();
 					listUsersResult = cognitoConfiguration.listAllUsers(usersRequest);
-					users.addAll(listUsersResult.getUsers());
-				} while ((Objects.nonNull(listUsersResult.getPaginationToken())));
+					users.addAll(listUsersResult.users());
+				} while ((Objects.nonNull(listUsersResult.paginationToken())));
 			}
-			listUsersResult.setUsers(users);
-			return listUsersResult;
+			return listUsersResult.toBuilder().users(users).build();
 
-		} catch (AWSCognitoIdentityProviderException e) {
+		} catch (CognitoIdentityProviderException e) {
 			log.error("Failed to fetch user details " + e.getMessage());
 			return null;
 		}

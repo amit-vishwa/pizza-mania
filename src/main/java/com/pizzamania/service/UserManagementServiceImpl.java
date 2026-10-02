@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.cognitoidp.model.AdminGetUserResult;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
 import com.pizzamania.constant.GlobalConstants;
 import com.pizzamania.dto.CartDto;
 import com.pizzamania.dto.PurchaseDetailDto;
@@ -255,18 +255,18 @@ public class UserManagementServiceImpl implements UserManagementService {
 		return securityContextUtil.getUserDetails();
 	}
 
-	public AdminGetUserResult getCognitoUser(String email) {
+	public AdminGetUserResponse getCognitoUser(String email) {
 		log.info("Get Cognito User");
 		return cognitoClient.getUser(email.toLowerCase());
 	}
 
 	private String addCognitoUser(User user) {
 		log.info("Adding New Cognito User");
-		AdminGetUserResult adminGetUserResult = getCognitoUser(user.getUserName());
+		AdminGetUserResponse adminGetUserResult = getCognitoUser(user.getUserName());
 		if (null == adminGetUserResult)
-			return cognitoClient.createUser(user).getUsername();
-		log.info("Cognito user exists with username : " + adminGetUserResult.getUsername());
-		return adminGetUserResult.getUsername();
+			return cognitoClient.createUser(user).username();
+		log.info("Cognito user exists with username : " + adminGetUserResult.username());
+		return adminGetUserResult.username();
 	}
 
 	private boolean deleteCognitoUser(String email) {

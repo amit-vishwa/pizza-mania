@@ -5,22 +5,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
-import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder;
-import com.amazonaws.services.cognitoidp.model.AdminCreateUserRequest;
-import com.amazonaws.services.cognitoidp.model.AdminCreateUserResult;
-import com.amazonaws.services.cognitoidp.model.AdminDeleteUserRequest;
-import com.amazonaws.services.cognitoidp.model.AdminDeleteUserResult;
-import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest;
-import com.amazonaws.services.cognitoidp.model.AdminGetUserResult;
-import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest;
-import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest;
-import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesResult;
-import com.amazonaws.services.cognitoidp.model.ListUsersRequest;
-import com.amazonaws.services.cognitoidp.model.ListUsersResult;
-import com.amazonaws.services.cognitoidp.model.UserType;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminDeleteUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminDeleteUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminSetUserPasswordRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.UserType;
 
 import lombok.Getter;
+import jakarta.annotation.PreDestroy;
 
 @Component
 @Getter
@@ -31,48 +31,55 @@ public class CognitoConfiguration {
     @Value("${aws.region}")
     private String region;
 
-    private AWSCognitoIdentityProvider cognitoIdP;
+    private CognitoIdentityProviderClient cognitoIdP;
 
-    public AWSCognitoIdentityProvider getAWSCognitoIdentityClient() {
+    public CognitoIdentityProviderClient getCognitoIdentityClient() {
         if (null == cognitoIdP) {
             logger.debug("Configuring Cognito");
-            cognitoIdP = AWSCognitoIdentityProviderClientBuilder.standard().withRegion(region).build();
+            cognitoIdP = CognitoIdentityProviderClient.builder().region(Region.of(region)).build();
             logger.debug("Cognito initialized successfully");
         }
         return cognitoIdP;
     }
 
-    public AdminGetUserResult adminGetUser(AdminGetUserRequest userRequest) {
-        AWSCognitoIdentityProvider cognitoIdentityProvider = getAWSCognitoIdentityClient();
+    @PreDestroy
+    void closeCognitoIdentityClient() {
+        if (cognitoIdP != null) {
+            cognitoIdP.close();
+        }
+    }
+
+    public AdminGetUserResponse adminGetUser(AdminGetUserRequest userRequest) {
+        CognitoIdentityProviderClient cognitoIdentityProvider = getCognitoIdentityClient();
         return cognitoIdentityProvider.adminGetUser(userRequest);
     }
 
     public UserType adminCreateUser(AdminCreateUserRequest userRequest) {
-        AWSCognitoIdentityProvider cognitoIdentityProvider = getAWSCognitoIdentityClient();
-        AdminCreateUserResult userResult = cognitoIdentityProvider.adminCreateUser(userRequest);
+        CognitoIdentityProviderClient cognitoIdentityProvider = getCognitoIdentityClient();
+        var userResult = cognitoIdentityProvider.adminCreateUser(userRequest);
         if (userResult != null) {
-            return userResult.getUser();
+            return userResult.user();
         }
         return null;
     }
 
     public void adminSetUserPassword(AdminSetUserPasswordRequest adminSetUserPasswordRequest) {
-        AWSCognitoIdentityProvider cognitoIdentityProvider = getAWSCognitoIdentityClient();
+        CognitoIdentityProviderClient cognitoIdentityProvider = getCognitoIdentityClient();
         cognitoIdentityProvider.adminSetUserPassword(adminSetUserPasswordRequest);
     }
 
-    public AdminDeleteUserResult adminDeleteUser(AdminDeleteUserRequest userAttributesRequest) {
-        AWSCognitoIdentityProvider cognitoIdentityProvider = getAWSCognitoIdentityClient();
+    public AdminDeleteUserResponse adminDeleteUser(AdminDeleteUserRequest userAttributesRequest) {
+        CognitoIdentityProviderClient cognitoIdentityProvider = getCognitoIdentityClient();
         return cognitoIdentityProvider.adminDeleteUser(userAttributesRequest);
     }
 
-    public AdminUpdateUserAttributesResult adminUpdateUserAttributes(AdminUpdateUserAttributesRequest userRequest) {
-        AWSCognitoIdentityProvider cognitoIdentityProvider = getAWSCognitoIdentityClient();
+    public AdminUpdateUserAttributesResponse adminUpdateUserAttributes(AdminUpdateUserAttributesRequest userRequest) {
+        CognitoIdentityProviderClient cognitoIdentityProvider = getCognitoIdentityClient();
         return cognitoIdentityProvider.adminUpdateUserAttributes(userRequest);
     }
 
-    public ListUsersResult listAllUsers(ListUsersRequest userRequest) {
-        AWSCognitoIdentityProvider cognitoIdentityProvider = getAWSCognitoIdentityClient();
+    public ListUsersResponse listAllUsers(ListUsersRequest userRequest) {
+        CognitoIdentityProviderClient cognitoIdentityProvider = getCognitoIdentityClient();
         return cognitoIdentityProvider.listUsers(userRequest);
     }
 
