@@ -25,6 +25,8 @@ Copy `.env.example` to a local `.env` file and replace every placeholder. Spring
 
 The application requires database, JWT, and Cognito settings listed in `.env.example`. Never commit real secrets or AWS credentials.
 
+SQL statement logging is disabled by default. Set `JPA_SHOW_SQL=true` only during controlled local debugging; SQL output can expose application data and should remain disabled in shared or production environments.
+
 Optional demo accounts are disabled by default. To create `user@example.com`, `manager@example.com`, and `admin@example.com` for local testing, set `BOOTSTRAP_USERS_ENABLED=true` and provide a local-only `BOOTSTRAP_USERS_PASSWORD` containing at least 12 characters. Do not enable these accounts in a public or production deployment.
 
 Run the application with:
@@ -42,3 +44,4 @@ The Postman collection and additional application notes are under `src/main/reso
 - Audit URLs retain the endpoint path but omit query strings, which may contain credentials under arbitrary parameter names. Request/response JSON payload logging remains enabled with recursive sensitive-field masking.
 - Audit persistence failures produce a fixed warning without exception messages or stack traces, which could contain SQL parameters or payload values.
 - The project is a learning application and has not been reviewed or operated as a production service.
+- The Cognito integration uses the supported AWS SDK for Java 2.x; credentials are resolved through the SDK's default credential provider chain.

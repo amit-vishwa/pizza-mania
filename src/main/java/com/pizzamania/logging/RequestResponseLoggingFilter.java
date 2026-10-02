@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class RequestResponseLoggingFilter extends OncePerRequestFilter {
+	private static final int REQUEST_CACHE_LIMIT_BYTES = 64 * 1024;
 
 	@Autowired
 	RequestResponseLogging logger;
@@ -45,7 +46,7 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
 		if (request instanceof ContentCachingRequestWrapper) {
 			return (ContentCachingRequestWrapper) request;
 		} else {
-			return new ContentCachingRequestWrapper(request);
+			return new ContentCachingRequestWrapper(request, REQUEST_CACHE_LIMIT_BYTES);
 		}
 	}
 
