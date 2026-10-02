@@ -12,7 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.pizzamania.controller.CartManagementController;
@@ -36,16 +36,16 @@ import jakarta.validation.constraints.Positive;
 @ActiveProfiles("test")
 class MethodAuthorizationTest {
 
-	@MockBean
+	@MockitoBean
 	private JwtDecoder jwtDecoder;
 
-	@MockBean
+	@MockitoBean
 	private RoleRepository roleRepository;
 
-	@MockBean
+	@MockitoBean
 	private UserRepository userRepository;
 
-	@MockBean
+	@MockitoBean
 	private PurchaseManagementService purchaseManagementService;
 
 	@Autowired
