@@ -52,7 +52,7 @@ CREATE TABLE `log` (
   `last_updated_by_user` varchar(45) DEFAULT NULL,
   `last_updated_by_process` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`log_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=236018 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=236018 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 4.create product table 
 CREATE TABLE `product` (
