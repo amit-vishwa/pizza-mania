@@ -1,0 +1,45 @@
+name: MySQL Schema Baseline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  mysql-schema:
+    name: MySQL 8.4 schema contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root-fixture-only
+          MYSQL_DATABASE: pizza_mania_it
+          MYSQL_USER: pizza_it
+          MYSQL_PASSWORD: pizza-fixture-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      PIZZA_MYSQL_TEST_URL: jdbc:mysql://127.0.0.1:3306/pizza_mania_it?allowPublicKeyRetrieval=true&useSSL=false
+      PIZZA_MYSQL_TEST_USER: pizza_it
+      PIZZA_MYSQL_TEST_PASSWORD: pizza-fixture-only
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Java 17
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Verify local suites and MySQL schema baseline
+        run: mvn --batch-mode --no-transfer-progress -Pmysql-it clean verify
