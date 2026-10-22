@@ -29,6 +29,7 @@ import com.pizzamania.model.PurchaseDetail;
 import com.pizzamania.repository.PurchaseManagementRepository;
 import com.pizzamania.repository.PurchaseManagementSearchRepository;
 import com.pizzamania.utility.Page;
+import com.pizzamania.utility.PurchaseAmountLimits;
 import com.pizzamania.utility.SearchCriteria;
 import com.pizzamania.utility.SecurityContextUtil;
 import com.pizzamania.utility.Utility;
@@ -130,6 +131,7 @@ public class PurchaseManagementServiceImpl implements PurchaseManagementService 
 		if (Utility.hasValue(request) && Utility.hasValue(request.getPurchaseItems())
 				&& Utility.hasValue(request.getPurchaseAmount()) && request.getPurchaseItems() > 0
 				&& request.getPurchaseAmount().compareTo(BigDecimal.ZERO) > 0) {
+			PurchaseAmountLimits.validate(request.getPurchaseAmount());
 			return true;
 		}
 		log.info("Not a valid purchase request!");

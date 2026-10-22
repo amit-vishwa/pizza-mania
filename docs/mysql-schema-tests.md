@@ -1,39 +1,50 @@
-# MySQL schema baseline
+# MySQL schema contracts and purchase limits
 
-The MySQL Schema Baseline workflow creates a disposable MySQL 8.4 service on a
-GitHub-hosted Ubuntu runner. It loads the checked-in `Table DDLs.txt` into an empty
-`pizza_mania_it` database, records server version and SQL mode, then runs three
-JDBC schema contracts. The existing default suites also run.
+Computed line totals and purchase amounts support nonnegative values through
+99,999,999.99, with at most two significant decimal places. No rounding or clipping
+is performed to make an unsupported amount fit. The existing purchase-create
+rule still requires a positive header amount. Unit-price capacity remains 999.99.
 
-The contracts document the current DECIMAL(5,2) capacity, an exact 500.00
-round-trip, and rejection of 3 x 500.00 in strict mode with no inserted line.
-The deliberate SQL exception is asserted, so the baseline job should pass.
-Its first hosted result is required before claiming MySQL reproduction.
+purchase_detail.total_product_cost now uses DECIMAL(10,2), matching the purchase
+header amount and its JPA mapping. Each computed line is checked before its stock
+update. The aggregate is checked before header creation; direct purchase-header
+creation enforces the same limit. Over-limit or fractional-cent amounts raise
+IllegalArgumentException, which the existing API handler maps to bad request.
+Earlier stock writes in a multi-line checkout rely on its existing rollback-on-
+exception transaction. Unit mocks do not prove that rollback; application-level
+database verification is follow-up work before issue #18 is closed.
 
-This is infrastructure and baseline evidence for issue #18, not the capacity
-fix. It does not exercise Spring services, HTTP, authentication, inventory
-updates, or checkout rollback. The synthetic parent purchase is committed during
-fixture setup; a failed line insert does not prove application transaction
-atomicity. Later work must test those guarantees through the application and
-replace the baseline overflow expectation when the capacity fix is introduced.
+## Fresh schema and upgrades
 
-## Local work without Docker
+For a fresh empty database, initialize with `src/main/resources/documents/Table DDLs.txt`.
+For an existing database, apply `src/main/resources/documents/upgrades/001-widen-purchase-line-total.sql`
+to the intended schema before deploying the updated application. The script only
+widens the line-total column; it does not delete or recalculate amounts. Plan the
+normal backup and DDL deployment window for your environment. No automatic
+migration framework or application-startup migration is introduced.
 
-Run `./mvnw --batch-mode --no-transfer-progress test` for the default H2/unit suites.
-The MySQL class ends in `IT` and is executed only by the `mysql-it` Failsafe profile
-during `verify`; missing database configuration fails explicitly, rather than
-silently skipping the tests. No local Docker/WSL or Cognito account is needed.
+The hosted MySQL contracts exercise both fresh initialization and an old-width
+table containing 500.00, then apply the exact upgrade script and verify that the
+old value survives and 1500.00 becomes storable. They also test exact maximum
+storage and rejection above it. The JDBC fixtures intentionally isolate column
+storage; synthetic line/header values are not a checkout calculation test.
 
-For a developer who already has an approved disposable local MySQL instance:
-create an empty `pizza_mania_it` database, set `PIZZA_MYSQL_TEST_URL`,
-`PIZZA_MYSQL_TEST_USER`, and `PIZZA_MYSQL_TEST_PASSWORD`, then run
-`./mvnw --batch-mode --no-transfer-progress -Pmysql-it verify`.
+## Execution
+
+Run `./mvnw --batch-mode --no-transfer-progress test` locally for the H2/unit suites.
+The GitHub-hosted MySQL 8.4 service runs
+`mvn --batch-mode --no-transfer-progress -Pmysql-it clean verify`.
+Missing MySQL settings fail explicitly rather than silently skipping tests.
+No local Docker/WSL, external delivery or Cognito account is required.
+
+For an already approved disposable local MySQL instance, create an empty
+`pizza_mania_it` database and set `PIZZA_MYSQL_TEST_URL`, `PIZZA_MYSQL_TEST_USER`
+and `PIZZA_MYSQL_TEST_PASSWORD`, then run `./mvnw -Pmysql-it verify`.
 The fixture accepts only loopback URLs and refuses a nonempty database before
-loading schema or deleting fixture rows. Never use application data. For a
-repeat run, recreate the disposable database first. CI removes its service when
-the job ends; developers own teardown of their approved local fixture.
+loading schema or deleting fixture rows. Recreate the disposable schema for a
+repeat run. CI removes its service when the job ends. Public workflow passwords
+are temporary fixture values and must never be reused as application credentials.
 
-Workflow credentials are public fixture values for the temporary isolated
-service. They are not application credentials and must never be reused elsewhere.
-The DDL statement terminator after the log table is corrected so the complete
-repository schema can load. No monetary column definition changes in this PR.
+PR #19 records the historical DECIMAL(5,2) overflow reproduction. The current
+contracts intentionally replace its 1500.00 rejection assertion with acceptance.
+First hosted execution of this change is required before claiming MySQL results.
