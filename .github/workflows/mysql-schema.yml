@@ -10,9 +10,13 @@ permissions:
 
 jobs:
   mysql-schema:
-    name: MySQL 8.4 schema contracts
+    name: MySQL 8.4 / ${{ matrix.contract }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        contract: [PurchaseSchemaMySqlIT, PurchaseCheckoutMySqlIT]
     services:
       mysql:
         image: mysql:8.4
@@ -41,5 +45,5 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
-      - name: Verify local suites and MySQL schema baseline
-        run: mvn --batch-mode --no-transfer-progress -Pmysql-it clean verify
+      - name: Verify local suites and selected MySQL contract
+        run: mvn --batch-mode --no-transfer-progress -Pmysql-it -Dmysql.contract=${{ matrix.contract }} clean verify

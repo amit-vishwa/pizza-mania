@@ -147,6 +147,9 @@
 	<profiles>
 		<profile>
 			<id>mysql-it</id>
+			<properties>
+				<mysql.contract>PurchaseSchemaMySqlIT</mysql.contract>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -155,7 +158,7 @@
 						<version>${maven-surefire-plugin.version}</version>
 						<configuration>
 							<includes>
-								<include>**/PurchaseSchemaMySqlIT.java</include>
+								<include>**/${mysql.contract}.java</include>
 							</includes>
 							<failIfNoTests>true</failIfNoTests>
 						</configuration>

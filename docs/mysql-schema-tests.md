@@ -11,8 +11,8 @@ update. The aggregate is checked before header creation; direct purchase-header
 creation enforces the same limit. Over-limit or fractional-cent amounts raise
 IllegalArgumentException, which the existing API handler maps to bad request.
 Earlier stock writes in a multi-line checkout rely on its existing rollback-on-
-exception transaction. Unit mocks do not prove that rollback; application-level
-database verification is follow-up work before issue #18 is closed.
+exception transaction. Unit mocks do not prove that rollback; the application contracts below verify
+the real Spring transaction using independent database reads.
 
 ## Fresh schema and upgrades
 
@@ -32,8 +32,10 @@ storage; synthetic line/header values are not a checkout calculation test.
 ## Execution
 
 Run `./mvnw --batch-mode --no-transfer-progress test` locally for the H2/unit suites.
-The GitHub-hosted MySQL 8.4 service runs
-`mvn --batch-mode --no-transfer-progress -Pmysql-it clean verify`.
+The GitHub-hosted MySQL 8.4 matrix runs each contract in a separate job/service:
+`mvn --batch-mode --no-transfer-progress -Pmysql-it -Dmysql.contract=PurchaseSchemaMySqlIT clean verify`
+and the same command with `PurchaseCheckoutMySqlIT`. Each job owns a fresh database;
+the two fixtures must not run against the same populated schema.
 Missing MySQL settings fail explicitly rather than silently skipping tests.
 No local Docker/WSL, external delivery or Cognito account is required.
 
@@ -48,3 +50,27 @@ are temporary fixture values and must never be reused as application credentials
 PR #19 records the historical DECIMAL(5,2) overflow reproduction. The current
 contracts intentionally replace its 1500.00 rejection assertion with acceptance.
 First hosted execution of this change is required before claiming MySQL results.
+
+## Application checkout and rollback contracts
+
+`PurchaseCheckoutTransactionTest` runs six shared service-level cases on a dedicated
+H2 database in the default suite. `PurchaseCheckoutMySqlIT` runs the same cases
+against the maintained DDL on hosted MySQL, with Hibernate set to validate only.
+Select it locally only with an approved empty disposable database:
+`./mvnw -Pmysql-it -Dmysql.contract=PurchaseCheckoutMySqlIT verify`.
+The default `mysql-it` selection remains the six JDBC schema/migration cases.
+
+The application cases cover authoritative database pricing for 3 x 500.00, exact
+0.10/0.20 arithmetic, the exact 99,999,999.99 checkout maximum, line overflow,
+aggregate overflow after inventory updates, and a forced failure after stock,
+header, cart and line writes. There is no outer test transaction. Success is
+verified after the service returns; rollback is verified after it throws, through
+new JDBC reads. All checkout services, repositories, mappers and user lookup are
+real. A mapper spy injects the late exception only after assertions see actual
+SQL writes inside the service transaction. JWT decoding is mocked to avoid
+external authentication; these are service contracts, not HTTP/Cognito tests.
+
+The fixture first refuses non-loopback or nonempty MySQL schemas before creating
+tables. Row cleanup is limited to that owned fixture; CI destroys the service.
+Local H2 success does not establish MySQL success: review the hosted matrix
+results at the submitted commit before merging or closing issue #18.
