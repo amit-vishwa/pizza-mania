@@ -38,7 +38,7 @@ class PurchaseSchemaMySqlIT {
         String mode = value("SELECT @@SESSION.sql_mode");
         assertThat(mode.contains("STRICT_TRANS_TABLES") || mode.contains("STRICT_ALL_TABLES"))
                 .as("Baseline overflow reproduction requires strict SQL mode").isTrue();
-        System.out.printf("MYSQL_SCHEMA_BASELINE server=%s sql_mode=%s%n",
+        System.out.printf("MYSQL_SCHEMA_CONTRACT server=%s sql_mode=%s%n",
                 value("SELECT VERSION()"), mode);
         ScriptUtils.executeSqlScript(database,
                 new ClassPathResource("documents/Table DDLs.txt"));
@@ -70,7 +70,7 @@ class PurchaseSchemaMySqlIT {
                         + "WHERE table_schema = DATABASE() AND table_name = 'purchase_detail' "
                         + "AND column_name = 'total_product_cost'")) {
             assertThat(column.next()).isTrue();
-            assertThat(column.getInt(1)).isEqualTo(5);
+            assertThat(column.getInt(1)).isEqualTo(10);
             assertThat(column.getInt(2)).isEqualTo(2);
         }
     }
@@ -85,16 +85,56 @@ class PurchaseSchemaMySqlIT {
     }
 
     @Test
-    void baselineSchema_shouldReject1500RatherThanSilentlyClipIt() throws Exception {
+    void total1500_shouldRoundTripExactly() throws Exception {
+        seedProductAndPurchase();
+        insertLine(3, new BigDecimal("500.00").multiply(BigDecimal.valueOf(3)));
+        assertThat(new BigDecimal(value("SELECT total_product_cost FROM purchase_detail")))
+                .isEqualByComparingTo("1500.00");
+        assertThat(value("SELECT COUNT(*) FROM purchase_detail")).isEqualTo("1");
+    }
+
+    @Test
+    void maximumStoredTotal_shouldRoundTripExactly() throws Exception {
+        seedProductAndPurchase();
+        insertLine(1, new BigDecimal("99999999.99"));
+        assertThat(new BigDecimal(value("SELECT total_product_cost FROM purchase_detail")))
+                .isEqualByComparingTo("99999999.99");
+    }
+
+    @Test
+    void aboveStorageMaximum_shouldRejectWithoutInsertion() throws Exception {
         seedProductAndPurchase();
         SQLException failure = assertThrows(SQLException.class,
-                () -> insertLine(3, new BigDecimal("500.00").multiply(BigDecimal.valueOf(3))));
+                () -> insertLine(200000, new BigDecimal("100000000.00")));
         assertThat(failure.getErrorCode()).isEqualTo(1264);
         assertThat(failure.getSQLState()).isEqualTo("22001");
         assertThat(value("SELECT COUNT(*) FROM purchase_detail")).isEqualTo("0");
-        System.out.printf("MYSQL_SCHEMA_BASELINE quantity=3 unit_cost=500.00 line_total=1500.00 "
-                + "error_code=%d sql_state=%s stored_lines=0%n",
-                failure.getErrorCode(), failure.getSQLState());
+    }
+
+    @Test
+    void upgrade_shouldPreserveOldValuesAndAllowLargerTotals() throws Exception {
+        seedProductAndPurchase();
+        try (Statement statement = database.createStatement()) {
+            statement.execute("ALTER TABLE purchase_detail MODIFY COLUMN "
+                    + "total_product_cost DECIMAL(5,2) NOT NULL");
+        }
+        try {
+            insertLine(1, new BigDecimal("500.00"));
+            ScriptUtils.executeSqlScript(database, new ClassPathResource(
+                    "documents/upgrades/001-widen-purchase-line-total.sql"));
+            assertThat(new BigDecimal(value("SELECT total_product_cost FROM purchase_detail")))
+                    .isEqualByComparingTo("500.00");
+            insertLine(3, new BigDecimal("1500.00"));
+            assertThat(value("SELECT COUNT(*) FROM purchase_detail")).isEqualTo("2");
+            assertThat(new BigDecimal(value("SELECT SUM(total_product_cost) FROM purchase_detail")))
+                    .isEqualByComparingTo("2000.00");
+        } finally {
+            // Keep unrelated cases isolated if a migration assertion fails.
+            try (Statement statement = database.createStatement()) {
+                statement.execute("ALTER TABLE purchase_detail MODIFY COLUMN "
+                        + "total_product_cost DECIMAL(10,2) NOT NULL");
+            }
+        }
     }
 
     private void seedProductAndPurchase() throws Exception {

@@ -42,7 +42,7 @@ public class PurchaseDetail {
 	@Column(name = "product_cost", precision = 5, scale = 2)
 	private BigDecimal productCost;
 
-	@Column(name = "total_product_cost", precision = 5, scale = 2)
+	@Column(name = "total_product_cost", precision = 10, scale = 2)
 	private BigDecimal totalProductCost;
 
 	@Column(name = "status")

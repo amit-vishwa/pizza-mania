@@ -29,6 +29,7 @@ import com.pizzamania.model.PurchaseDetail;
 import com.pizzamania.repository.PurchaseDetailManagementRepository;
 import com.pizzamania.repository.PurchaseDetailManagementSearchRepository;
 import com.pizzamania.utility.Page;
+import com.pizzamania.utility.PurchaseAmountLimits;
 import com.pizzamania.utility.SearchCriteria;
 import com.pizzamania.utility.SecurityContextUtil;
 import com.pizzamania.utility.Utility;
@@ -136,6 +137,7 @@ public class PurchaseDetailManagementServiceImpl implements PurchaseDetailManage
 				request.setProductCost(productResponse.getPageEntries().get(0).getProductCost());
 				request.setTotalProductCost(
 						request.getProductCost().multiply(BigDecimal.valueOf(request.getProductQuantity())));
+				PurchaseAmountLimits.validate(request.getTotalProductCost());
 				updateProductQuantity(productResponse.getPageEntries(), request, process);
 				return true;
 			}
@@ -173,6 +175,7 @@ public class PurchaseDetailManagementServiceImpl implements PurchaseDetailManage
 
 	private Integer generatePurchaseId(List<PurchaseDetail> purchaseDetails) throws CRUDFailureException {
 		BigDecimal purchaseAmount = totalPurchaseAmount(purchaseDetails);
+		PurchaseAmountLimits.validate(purchaseAmount);
 		PurchaseDto purchaseOrder = new PurchaseDto();
 		purchaseOrder.setPurchaseItems(purchaseDetails.size());
 		purchaseOrder.setPurchaseAmount(purchaseAmount);

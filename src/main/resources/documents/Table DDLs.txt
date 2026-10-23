@@ -98,7 +98,7 @@ CREATE TABLE `purchase_detail` (
   `product_id` int NOT NULL,
   `product_quantity` int NOT NULL,
   `product_cost` decimal(5,2) NOT NULL,
-  `total_product_cost` decimal(5,2) NOT NULL,
+  `total_product_cost` decimal(10,2) NOT NULL,
   `status` varchar(45) NOT NULL,
   `status_timestamp` datetime NOT NULL,
   `record_status` char(1) NOT NULL DEFAULT 'A',
