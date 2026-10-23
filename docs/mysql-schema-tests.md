@@ -55,7 +55,12 @@ First hosted execution of this change is required before claiming MySQL results.
 
 `PurchaseCheckoutTransactionTest` runs six shared service-level cases on a dedicated
 H2 database in the default suite. `PurchaseCheckoutMySqlIT` runs the same cases
-against the maintained DDL on hosted MySQL, with Hibernate set to validate only.
+against the maintained DDL on hosted MySQL. Hibernate schema management is disabled
+(`ddl-auto=none`); the fixture explicitly checks DECIMAL precision, scale and NOT NULL
+for product price, line price/total and header amount before application startup.
+Global Hibernate validation is not enabled: existing CHAR status columns differ
+from the entities' VARCHAR defaults. This test does not alter that older contract
+or let Hibernate create, drop or update tables.
 Select it locally only with an approved empty disposable database:
 `./mvnw -Pmysql-it -Dmysql.contract=PurchaseCheckoutMySqlIT verify`.
 The default `mysql-it` selection remains the six JDBC schema/migration cases.

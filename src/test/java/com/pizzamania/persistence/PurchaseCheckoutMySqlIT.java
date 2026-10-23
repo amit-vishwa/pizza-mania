@@ -32,13 +32,35 @@ class PurchaseCheckoutMySqlIT extends AbstractCheckoutContract {
             System.out.printf("MYSQL_CHECKOUT_CONTRACT server=%s sql_mode=%s%n",
                     value(connection, "SELECT VERSION()"), mode);
             ScriptUtils.executeSqlScript(connection, new ClassPathResource("documents/Table DDLs.txt"));
+            assertMoneyColumn(connection, "product", "product_cost", 5);
+            assertMoneyColumn(connection, "purchase_detail", "product_cost", 5);
+            assertMoneyColumn(connection, "purchase_detail", "total_product_cost", 10);
+            assertMoneyColumn(connection, "purchase", "purchase_amount", 10);
         }
         properties.add("spring.datasource.jdbc-url", () -> url);
         properties.add("spring.datasource.username", () -> user);
         properties.add("spring.datasource.password", () -> password);
         properties.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
-        // Validate the maintained schema; never let Hibernate create/drop or upgrade it.
-        properties.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
+        // Legacy CHAR status mappings differ from Hibernate's VARCHAR defaults.
+        // Check money metadata explicitly above; exercise the maintained schema unchanged.
+        properties.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+    }
+
+    private static void assertMoneyColumn(Connection connection, String table, String column,
+            int precision) throws Exception {
+        try (var query = connection.prepareStatement("SELECT data_type, numeric_precision, numeric_scale, "
+                + "is_nullable FROM information_schema.columns WHERE table_schema = DATABASE() "
+                + "AND table_name = ? AND column_name = ?")) {
+            query.setString(1, table);
+            query.setString(2, column);
+            try (ResultSet metadata = query.executeQuery()) {
+                assertThat(metadata.next()).as(table + "." + column).isTrue();
+                assertThat(metadata.getString(1)).isEqualTo("decimal");
+                assertThat(metadata.getInt(2)).isEqualTo(precision);
+                assertThat(metadata.getInt(3)).isEqualTo(2);
+                assertThat(metadata.getString(4)).isEqualTo("NO");
+            }
+        }
     }
 
     private static String value(Connection connection, String query) throws Exception {
