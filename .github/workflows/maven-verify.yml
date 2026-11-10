@@ -32,3 +32,16 @@ jobs:
 
       - name: Verify
         run: mvn --batch-mode --no-transfer-progress clean verify
+
+      - name: Upload Maven test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: maven-test-reports-${{ github.run_attempt }}
+          path: |
+            target/surefire-reports/*.xml
+            target/surefire-reports/*.txt
+            target/surefire-reports/*.dump
+            target/surefire-reports/*.dumpstream
+          if-no-files-found: warn
+          retention-days: 7
