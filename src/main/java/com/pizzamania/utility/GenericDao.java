@@ -35,6 +35,10 @@ public abstract class GenericDao<T, PK extends Serializable> {
 
 	@SuppressWarnings({ "unchecked" })
 	protected List<T> doSearch(SearchCriteria<T> searchCriteria, long rowCount) {
+        int startIndex = searchCriteria.calcStartIndex(rowCount);
+        if (startIndex < 0 || startIndex >= rowCount) {
+            return new ArrayList<>();
+        }
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<T> cr = (CriteriaQuery<T>) cb.createQuery(getClazz());
 		Root<T> root = (Root<T>) cr.from(getClazz());
@@ -52,7 +56,7 @@ public abstract class GenericDao<T, PK extends Serializable> {
 			cr.orderBy(orders);
 		}
 		TypedQuery<T> q = entityManager.createQuery(cr);
-		q.setFirstResult(searchCriteria.calcStartIndex(rowCount));
+		q.setFirstResult(startIndex);
 		final int recordsInPage = searchCriteria.getRecordsInPage();
 		if (recordsInPage < Integer.MAX_VALUE) {
 			q.setMaxResults(recordsInPage);
@@ -82,9 +86,9 @@ public abstract class GenericDao<T, PK extends Serializable> {
 	public Page<T> search(SearchCriteria<T> searchCriteria) {
 		final long rowCount = rowCount(searchCriteria);
 		if (rowCount == 0) {
-			return new Page<>(searchCriteria.getRecordsInPage(), 0, rowCount, new ArrayList<T>());
+			return new Page<>(searchCriteria.getRecordsInPage(), searchCriteria.getCurrentPage(), rowCount, new ArrayList<T>());
 		}
-		return new Page<>(searchCriteria.getRecordsInPage(), searchCriteria.calcStartIndex(rowCount), rowCount,
+		return new Page<>(searchCriteria.getRecordsInPage(), searchCriteria.getCurrentPage(), rowCount,
 				doSearch(searchCriteria, rowCount));
 	}
 
