@@ -13,7 +13,7 @@ public class Page<T> {
 	 * Frst record offset number of the list. Specify an offset from where to start
 	 * returning data.
 	 */
-	private int firstRecordOffset;
+	private long firstRecordOffset;
 
 	/**
 	 * Total number of records in list.
@@ -50,7 +50,7 @@ public class Page<T> {
 			this.recordsInPage = recordsInPage;
 			this.currentPage = currentPage;
 			this.pageEntries = pageEntries;
-			this.firstRecordOffset = currentPage * recordsInPage;
+			this.firstRecordOffset = (long) currentPage * recordsInPage;
 			this.totalRecords = (int) totalRecords;
 			this.totalPages = getTotalPagesCount(recordsInPage, totalRecords);
 		} catch (IllegalArgumentException e) {
@@ -74,14 +74,14 @@ public class Page<T> {
 	/**
 	 * @return the firstRecordOffset
 	 */
-	public int getFirstRecordOffset() {
+	public long getFirstRecordOffset() {
 		return firstRecordOffset;
 	}
 
 	/**
 	 * @param firstRecordOffset the firstRecordOffset to set
 	 */
-	public void setFirstRecordOffset(int firstRecordOffset) {
+	public void setFirstRecordOffset(long firstRecordOffset) {
 		this.firstRecordOffset = firstRecordOffset;
 	}
 

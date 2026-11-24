@@ -187,14 +187,11 @@ public class SearchCriteria<T> {
 	}
 
 	public int calcStartIndex(int pageNumber, int recordsInPage, long totalRecordsInResult) {
-		int startIndex = pageNumber * recordsInPage;
-		if (startIndex < 0) {
-			startIndex = 0;
-		}
-		if (startIndex > totalRecordsInResult) {
-			startIndex = -1;
-		}
-		return startIndex;
+        long startIndex = Math.max(0L, (long) pageNumber * recordsInPage);
+        if (startIndex > totalRecordsInResult || startIndex > Integer.MAX_VALUE) {
+            return -1;
+        }
+        return (int) startIndex;
 	}
 
 	public int calcEndIndex(int startIndex, int recordsInPage, long totalRecordsInResult) {
